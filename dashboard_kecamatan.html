@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Musrenbang Kecamatan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  background: #f4f6f9;
+}
+.header {
+  background: #1a5bb8;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+.container {
+  padding: 20px;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+  gap: 15px;
+}
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+.card h2 {
+  margin: 0;
+  font-size: 28px;
+  color: #1a5bb8;
+}
+.chart-box {
+  background: white;
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 8px;
+}
+.logout {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  background: red;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>DASHBOARD MUSRENBANG KECAMATAN</h2>
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+<div class="cards">
+  <div class="card">
+    <div>Total Usulan</div>
+    <h2 id="totalUsulan">0</h2>
+  </div>
+  <div class="card">
+    <div>Menunggu</div>
+    <h2 id="menunggu">0</h2>
+  </div>
+  <div class="card">
+    <div>Disetujui</div>
+    <h2 id="disetujui">0</h2>
+  </div>
+  <div class="card">
+    <div>Ditolak</div>
+    <h2 id="ditolak">0</h2>
+  </div>
+</div>
+
+<div class="chart-box">
+  <h3>Grafik Usulan per Bidang</h3>
+  <canvas id="chartBidang"></canvas>
+</div>
+
+<div class="chart-box">
+  <h3>Grafik Usulan per Kelurahan</h3>
+  <canvas id="chartKelurahan"></canvas>
+</div>
+
+</div>
+
+<script>
+// =====================
+// CEK LOGIN
+// =====================
+if (localStorage.getItem("role") !== "kecamatan") {
+  alert("Akses ditolak");
+  window.location = "index.html";
+}
+
+const SCRIPT_URL = "PASTE_SCRIPT_URL_DATA";
+
+// =====================
+// LOAD DATA
+// =====================
+fetch(SCRIPT_URL)
+  .then(res => res.json())
+  .then(data => {
+
+    let total = data.length;
+    let menunggu = 0, setuju = 0, tolak = 0;
+
+    let bidang = {};
+    let kelurahan = {};
+
+    data.forEach(r => {
+      if (r.status === "Disetujui") setuju++;
+      else if (r.status === "Ditolak") tolak++;
+      else menunggu++;
+
+      bidang[r.bidang] = (bidang[r.bidang] || 0) + 1;
+      kelurahan[r.kelurahan] = (kelurahan[r.kelurahan] || 0) + 1;
+    });
+
+    document.getElementById("totalUsulan").innerText = total;
+    document.getElementById("menunggu").innerText = menunggu;
+    document.getElementById("disetujui").innerText = setuju;
+    document.getElementById("ditolak").innerText = tolak;
+
+    // =====================
+    // CHART BIDANG
+    // =====================
+    new Chart(document.getElementById("chartBidang"), {
+      type: "bar",
+      data: {
+        labels: Object.keys(bidang),
+        datasets: [{
+          data: Object.values(bidang)
+        }]
+      }
+    });
+
+    // =====================
+    // CHART KELURAHAN
+    // =====================
+    new Chart(document.getElementById("chartKelurahan"), {
+      type: "pie",
+      data: {
+        labels: Object.keys(kelurahan),
+        datasets: [{
+          data: Object.values(kelurahan)
+        }]
+      }
+    });
+
+  });
+
+// =====================
+function logout() {
+  localStorage.clear();
+  window.location = "index.html";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Input Usulan Musrenbang Kelurahan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial;
+  background: #eef3f9;
+  margin: 0;
+}
+.header {
+  background: #1a5bb8;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+.container {
+  max-width: 720px;
+  margin: 25px auto;
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+}
+label {
+  font-weight: bold;
+  display: block;
+  margin-top: 12px;
+}
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+}
+input[readonly] {
+  background: #f1f1f1;
+}
+button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background: #1a5bb8;
+  color: white;
+  border: none;
+  font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>INPUT USULAN MUSRENBANG KELURAHAN</h2>
+</div>
+
+<div class="container">
+
+<form id="formUsulan">
+
+  <label>Kelurahan</label>
+  <input type="text" id="kelurahan" name="kelurahan" readonly>
+
+  <label>Nama Lurah</label>
+  <input type="text" id="namaLurah" readonly>
+
+  <label>NIP</label>
+  <input type="text" id="nipLurah" readonly>
+
+  <label>Bidang</label>
+  <select name="bidang" required>
+    <option value="">-- Pilih Bidang --</option>
+    <option>Infrastruktur</option>
+    <option>Pendidikan</option>
+    <option>Kesehatan</option>
+    <option>Ekonomi</option>
+    <option>Sosial Budaya</option>
+    <option>Pemerintahan</option>
+  </select>
+
+  <label>Kegiatan</label>
+  <input name="kegiatan" required>
+
+  <label>Lokasi</label>
+  <input name="lokasi">
+
+  <label>OPD Tujuan</label>
+  <input name="opd">
+
+  <label>Keterangan</label>
+  <textarea name="keterangan"></textarea>
+
+  <button type="submit">KIRIM USULAN</button>
+
+</form>
+
+</div>
+
+<script>
+// ================= CEK LOGIN =================
+if (!localStorage.getItem("role")) {
+  alert("Silakan login terlebih dahulu");
+  window.location = "index.html";
+}
+
+// ================= DATA PEJABAT =================
+const dataPejabat = {
+  "Kelurahan Tondon Mamullu": { nama: "Daniel Tanding, SE", nip: "197012312006041055" }
+};
+
+// ================= ISI OTOMATIS =================
+const kelurahan = localStorage.getItem("kelurahan");
+document.getElementById("kelurahan").value = kelurahan;
+
+if (dataPejabat[kelurahan]) {
+  document.getElementById("namaLurah").value = dataPejabat[kelurahan].nama;
+  document.getElementById("nipLurah").value = dataPejabat[kelurahan].nip;
+}
+
+// ================= KIRIM DATA =================
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyfS-75Uw2GNNcscKOmjeZNYZJDKFCmm4w425MTbXn8-g9P2lgfNvPsTy0BHLfVWqPo4Q/exec";
+
+document.getElementById("formUsulan").addEventListener("submit", function(e){
+  e.preventDefault();
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    body: new FormData(this)
+  })
+  .then(() => {
+    alert("Usulan berhasil dikirim ke Kecamatan");
+    this.reset();
+    document.getElementById("kelurahan").value = kelurahan;
+  });
+});
+</script>
+
+</body>
+</html>

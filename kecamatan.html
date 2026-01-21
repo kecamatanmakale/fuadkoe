@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Admin Kecamatan - Verifikasi Musrenbang</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial;
+  background: #eef2f7;
+  margin: 0;
+}
+.header {
+  background: #1a5bb8;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+.container {
+  padding: 20px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  font-size: 14px;
+}
+th {
+  background: #f1f1f1;
+}
+select, button {
+  padding: 6px;
+}
+.badge-ok {
+  background: #28a745;
+  color: #fff;
+  padding: 4px 8px;
+}
+.badge-no {
+  background: #dc3545;
+  color: #fff;
+  padding: 4px 8px;
+}
+.top-bar {
+  margin-bottom: 10px;
+}
+.logout {
+  float: right;
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>VERIFIKASI MUSRENBANG KECAMATAN</h2>
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+<div class="top-bar">
+  Kelurahan:
+  <select id="filterKelurahan" onchange="loadData()">
+    <option value="">Semua</option>
+  </select>
+
+  Bidang:
+  <select id="filterBidang" onchange="loadData()">
+    <option value="">Semua</option>
+    <option>Infrastruktur</option>
+    <option>Pendidikan</option>
+    <option>Kesehatan</option>
+    <option>Ekonomi</option>
+    <option>Sosial Budaya</option>
+    <option>Pemerintahan</option>
+  </select>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>No</th>
+  <th>Kelurahan</th>
+  <th>Kegiatan</th>
+  <th>Lokasi</th>
+  <th>Bidang</th>
+  <th>OPD</th>
+  <th>Status</th>
+  <th>Aksi</th>
+</tr>
+</thead>
+<tbody id="dataTabel"></tbody>
+</table>
+
+</div>
+
+<script>
+// ===============================
+// CEK LOGIN
+// ===============================
+if (localStorage.getItem("role") !== "kecamatan") {
+  alert("Akses ditolak");
+  window.location = "index.html";
+}
+
+const SCRIPT_URL = "PASTE_SCRIPT_URL_DATA";
+
+// ===============================
+// LOAD DATA
+// ===============================
+function loadData() {
+
+  const kel = document.getElementById("filterKelurahan").value;
+  const bidang = document.getElementById("filterBidang").value;
+
+  fetch(SCRIPT_URL + "?kelurahan=" + kel + "&bidang=" + bidang)
+    .then(res => res.json())
+    .then(data => {
+
+      let html = "";
+      let no = 1;
+      let kelSet = new Set();
+
+      data.forEach(row => {
+
+        kelSet.add(row.kelurahan);
+
+        let status = row.status || "Menunggu";
+
+        let badge = status === "Disetujui"
+          ? "<span class='badge-ok'>Disetujui</span>"
+          : status === "Ditolak"
+          ? "<span class='badge-no'>Ditolak</span>"
+          : "Menunggu";
+
+        html += `
+        <tr>
+          <td>${no++}</td>
+          <td>${row.kelurahan}</td>
+          <td>${row.kegiatan}</td>
+          <td>${row.lokasi}</td>
+          <td>${row.bidang}</td>
+          <td>${row.opd}</td>
+          <td>${badge}</td>
+          <td>
+            ${status === "Menunggu" ? `
+              <button onclick="verifikasi(${row.id},'Disetujui')">✔</button>
+              <button onclick="verifikasi(${row.id},'Ditolak')">✖</button>
+            ` : "-"}
+          </td>
+        </tr>`;
+      });
+
+      document.getElementById("dataTabel").innerHTML = html;
+
+      // isi filter kelurahan
+      const select = document.getElementById("filterKelurahan");
+      select.innerHTML = '<option value="">Semua</option>';
+      kelSet.forEach(k => {
+        select.innerHTML += `<option>${k}</option>`;
+      });
+
+    });
+}
+
+loadData();
+
+// ===============================
+// VERIFIKASI
+// ===============================
+function verifikasi(id, status) {
+
+  if (!confirm("Yakin " + status + "?")) return;
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    body: new URLSearchParams({
+      id: id,
+      status: status
+    })
+  }).then(() => loadData());
+}
+
+// ===============================
+// LOGOUT
+// ===============================
+function logout() {
+  localStorage.clear();
+  window.location = "index.html";
+}
+</script>
+
+</body>
+</html>
