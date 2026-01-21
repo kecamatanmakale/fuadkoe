@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Input Usulan Musrenbang</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 20px;
+    }
+    .box {
+      max-width: 420px;
+      margin: auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    }
+    input, textarea, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 14px;
+    }
+    button {
+      background: #1a5bb8;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #174ea6;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+  <h3>Input Usulan Musrenbang</h3>
+
+  <form id="form" onsubmit="kirim(); return false;">
+    <input id="kelurahan" placeholder="Kelurahan" required>
+    <input id="bidang" placeholder="Bidang" required>
+    <input id="kegiatan" placeholder="Kegiatan" required>
+    <input id="lokasi" placeholder="Lokasi">
+    <input id="opd" placeholder="OPD">
+    <textarea id="keterangan" placeholder="Keterangan"></textarea>
+
+    <button type="submit">Kirim Usulan</button>
+  </form>
+</div>
+
+<script>
+function kirim() {
+
+  const data = new FormData();
+  data.append("kelurahan", kelurahan.value);
+  data.append("bidang", bidang.value);
+  data.append("kegiatan", kegiatan.value);
+  data.append("lokasi", lokasi.value);
+  data.append("opd", opd.value);
+  data.append("keterangan", keterangan.value);
+
+  fetch("<?= ScriptApp.getService().getUrl() ?>", {
+    method: "POST",
+    body: data
+  })
+  .then(res => res.text())
+  .then(res => {
+    if (res === "OK") {
+      alert("Usulan berhasil dikirim");
+      document.getElementById("form").reset();
+    } else {
+      alert(res);
+    }
+  });
+}
+</script>
+
+</body>
+</html>
